@@ -116,3 +116,107 @@ class Ball(GameObject):
                 self.direction[1] /= length
                 break
 
+class Paddle(GameObject):
+    def __init__(self, canvas, x, y):
+        self.width = 105
+        self.height = 15
+        self.ball = None
+
+        item = canvas.create_rectangle(
+            x-52, y-7,
+            x+52, y+7,
+            fill="#FFB6C9",
+            outline="#E58BAF",
+            width=2,
+            tags="paddle"
+        )
+
+        super().__init__(canvas, item)
+
+        self.decoration = canvas.create_text(
+            x, y,
+            text="♡  MEOW  ♡",
+            font=("Arial", 9, "bold"),
+            fill="#FFFFFF"
+        )
+
+    def move(self, offset):
+        coords = self.get_position()
+        width = self.canvas.winfo_width()
+
+        if coords[0] + offset >= 0 and coords[2] + offset <= width:
+            super().move(offset, 0)
+            self.canvas.move(self.decoration, offset, 0)
+
+            if self.ball and not self.ball.active:
+                self.ball.move(offset, 0)
+
+
+class Brick(GameObject):
+    COLORS = {
+        1: "#FFB6C9",
+        2: "#C9B3ED",
+        3: "#A9DCCF"
+    }
+
+    def __init__(self, canvas, x, y, hits):
+        self.width = 65
+        self.height = 21
+        self.hits = hits
+
+        color = self.COLORS[hits]
+
+        item = canvas.create_rectangle(
+            x-32, y-10,
+            x+32, y+10,
+            fill=color,
+            outline="#FFFFFF",
+            width=2,
+            tags="brick"
+        )
+
+        super().__init__(canvas, item)
+
+        self.decoration = canvas.create_text(
+            x, y,
+            text="♡",
+            font=("Arial", 11, "bold"),
+            fill="#FFFFFF"
+        )
+
+    def hit(self):
+        self.hits -= 1
+
+        if self.hits <= 0:
+            self.canvas.delete(self.decoration)
+            self.delete()
+        else:
+            self.canvas.itemconfig(
+                self.item,
+                fill=self.COLORS[self.hits]
+            )
+
+
+def create_sparkles(canvas, x, y):
+    symbols = ["♡", "✦", "✧", "♥"]
+
+    for i in range(4):
+        dx = random.randint(-15, 15)
+        dy = random.randint(-15, 15)
+
+        particle = canvas.create_text(
+            x+dx,
+            y+dy,
+            text=random.choice(symbols),
+            fill=random.choice([
+                "#FF91B8",
+                "#C9A7EB",
+                "#F5C6A5"
+            ]),
+            font=("Arial", 12)
+        )
+
+        canvas.after(
+            250,
+            lambda p=particle: canvas.delete(p)
+        )
